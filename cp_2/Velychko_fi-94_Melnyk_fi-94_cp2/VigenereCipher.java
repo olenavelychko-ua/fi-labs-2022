@@ -4,25 +4,6 @@ import java.util.*;
 
 public class VigenereCipher {
 
-    public static HashMap<Character, Integer> sortByValue(HashMap<Character, Integer> sortedMap) {
-
-        List<Map.Entry<Character, Integer>> list =
-                new LinkedList<Map.Entry<Character, Integer>>(sortedMap.entrySet());
-
-        list.sort(new Comparator<Map.Entry<Character, Integer>>() {
-            public int compare(Map.Entry<Character, Integer> o1,
-                               Map.Entry<Character, Integer> o2) {
-                return (o2.getValue()).compareTo(o1.getValue());
-            }
-        });
-
-        HashMap<Character, Integer> temp = new LinkedHashMap<Character, Integer>();
-        for (Map.Entry<Character, Integer> aa : list) {
-            temp.put(aa.getKey(), aa.getValue());
-        }
-        return temp;
-    }
-
     private static boolean isCyrillicOrSpace(char ch) {
         return (ch >= 'а' && ch <= 'я' || ch == ' ');
     }
@@ -32,12 +13,12 @@ public class VigenereCipher {
         char op, k;
         int i = 0;
         int m = 0;
-        int num = 0;
+        int num;
         while (i < pureText.length()) {
             op = pureText.charAt(i);
             k = key.charAt(m);
             if (op != ' ') {
-                num = ((op - 1072) + (k - 1072)) % 31 + 1072;
+                num = ((op - 1072) + (k - 1072)) % 32 + 1072;
                 text.append((char) num);
             }
             i++;
@@ -49,8 +30,8 @@ public class VigenereCipher {
 
     private static double matchingIndex(String text) {
         HashMap<Character, Integer> map = new HashMap<>();
-        int i = 0;
-        int n = 0;
+        int i;
+        int n;
         double index = 0;
         for (char ch : text.toCharArray()) {
             if (!map.containsKey(ch)) {
@@ -69,108 +50,123 @@ public class VigenereCipher {
         return index;
     }
 
-  /*  private static int determineKeyLength(String text) {
-        String blockOfText = text.substring(0, 2);
-        int r = 2;
-        double ind;
-        int i = 2;
-        ind = matchingIndex(blockOfText);
-        double sum = 0.31;
-        while (ind == 0.0) {
-            r = i;
-            blockOfText = text.substring(0, i);
-            ind = matchingIndex(blockOfText);
-            i++;
-        }
-        while (Math.abs(sum - 0.055) >= Math.abs(sum - 0.03125)) {
-            sum = 0;
-            r = i;
-            blockOfText = text.substring(0, i);
-            sum = matchingIndex(blockOfText) + sum;
-            i++;
-            System.out.println("######" + blockOfText);
-            System.out.println("######" + ind);
-        }
-        return r;
-    } */
-
-    private static int determineKeyLengthWithD(String text) {
+    private static int determineKeyLength(String text) {
         int temp;
         int max = 0;
-        int maxr=0;
-        int r = 6;
-        int d = 0;
-        while (r < 50) {
-            d=0;
+        int maxr = 0;
+        int r = 8;
+        int d;
+        while (r < 20) {
+            d = 0;
             for (int p = 0; (p + r) < text.length(); p = p + r) {
                 if (text.charAt(p) == text.charAt(p + r)) d++;
             }
-            System.out.println("______" + d+" ///////"+r);
             temp = d;
             if (temp > max) {
                 max = temp;
-                maxr=r;
+                maxr = r;
             }
             r++;
         }
         return maxr;
     }
 
-
     private static String findKey(int r, String text) {
         StringBuilder key = new StringBuilder();
         int k = 0;
-        int num, i;
+        int num;
         while (key.length() < r) {
             StringBuilder text1 = new StringBuilder();
-            for (int p = 0 + k; (p + r + k) < text.length(); p = r + p) {
+            for (int p = k; (p) < text.length(); p = r + p) {
                 char tempch = text.charAt(p);
                 text1.append(tempch);
-                //System.out.println("______" + p);
-
             }
             k++;
-            //System.out.println("%%%%%" + text1.toString());
             LinkedHashMap<Character, Integer> map = new LinkedHashMap<>();
-            i = 0;
             for (char ch : text1.toString().toCharArray()) {
-                if (!map.containsKey(ch)) {
-                    map.put(ch, 1);
-                } else {
-                    i = map.get(ch);
-                    i++;
-                    map.put(ch, i);
-                }
+                map.put(ch, map.getOrDefault(ch, 0) + 1);
             }
-
-         /*   Character maxch = 'a';
+            Character maxch = 'a';
             int count = -1;
             for (Character ch : map.keySet()) {
-                if (map.get(ch) >= count) {
+                if (map.get(ch) > count) {
                     maxch = ch;
                     count = map.get(ch);
                 }
-            }*/
-            Map<Character, Integer> hm1 = sortByValue(map);
-            Character f = hm1.keySet().iterator().next();
-            char maxch = f;
-            System.out.println("%%%%%" + maxch);
+            }
             if ((maxch - 1072) - ('о' - 1072) >= 0) {
-                num = ((maxch - 1072) - ('о' - 1072)) % 31 + 1072;
+                num = ((maxch - 1072) - ('о' - 1072)) % 32 + 1072;
             } else {
                 int m = 32 + (maxch - 1072) - ('о' - 1072);
-                num = m % 31 + 1072;
+                num = m % 32 + 1072;
             }
             key.append((char) num);
-
         }
         return key.toString();
     }
 
-  /*  private static String findKeyWithD(int r, String text){
+    private static String findKeyWithM(int r, String text)  {
+        final double[] Abc = new double[]{0.062, 0.014, 0.038, 0.013, 0.025, 0.072, 0.007, 0.016, 0.062, 0.010, 0.028, 0.035, 0.026, 0.053, 0.090, 0.023, 0.040, 0.045, 0.053, 0.021, 0.002, 0.009, 0.004, 0.012, 0.006, 0.003, 0.014, 0.016, 0.014, 0.003, 0.006, 0.018};
+        final String alf = "абвгдежзийклмнопрстуфхцчшщъыьэюя";
+        StringBuilder key = new StringBuilder();
+        int k = 0;
+        while (key.length() < r) {
+            StringBuilder text1 = new StringBuilder();
+            for (int p = k; p < text.length(); p = r + p) {
+                char tempch = text.charAt(p);
+                text1.append(tempch);
+            }
+            k++;
+            TreeMap<Character, Integer> map = new TreeMap<>();
+            for (char ch : text1.toString().toCharArray()) {
+                map.put(ch, map.getOrDefault(ch, 0) + 1);
+            }
+            Map<Character, Double> mapKeySymbols = new LinkedHashMap<>();
+            for (int shift = 0; shift < 32; shift++) {
+                double sum = 0;
+                for (int g = 0; g < 32; g++) {
+                    Character ch1 = alf.charAt((g + shift) % 32);
+                    int val1 = map.getOrDefault(ch1, 0);
+                    double val2 = Abc[g];
+                    sum += val1 * val2;
+                }
+                mapKeySymbols.put(alf.charAt(shift), sum);
+            }
+            Character maxch = 'a';
+            double count = -1;
+            for (Character ch : mapKeySymbols.keySet()) {
+                if (mapKeySymbols.get(ch) > count) {
+                    maxch = ch;
+                    count = mapKeySymbols.get(ch);
+                }
+            }
+            key.append((char) maxch);
+        }
+        return key.toString();
+    }
 
-    } */
-
+    private static String decryptText(String cipherText, String key) {
+        StringBuilder text = new StringBuilder();
+        char op, k;
+        int i = 0;
+        int temp = 0;
+        int num;
+        while (i < cipherText.length()) {
+            op = cipherText.charAt(i);
+            k = key.charAt(temp);
+            if ((op - 1072) - (k - 1072) >= 0) {
+                num = ((op - 1072) - (k - 1072)) % 32 + 1072;
+            } else {
+                int m = 32 + (op - 1072) - (k - 1072);
+                num = m % 32 + 1072;
+            }
+            text.append((char) num);
+            i++;
+            temp++;
+            if (temp == key.length()) temp = 0;
+        }
+        return text.toString();
+    }
 
     public static void main(String[] args) throws Exception {
         File doc = new File("C:\\text2.txt");
@@ -187,7 +183,7 @@ public class VigenereCipher {
             builder.append(' ');
         }
         String finalString = builder.toString().trim().replaceAll("[ ]+", " ");
-        System.out.println(finalString);
+        System.out.println("Pure text is: "+finalString);
 
         String key2 = "ум";
         String key3 = "мир";
@@ -219,16 +215,21 @@ public class VigenereCipher {
         double index20 = matchingIndex(cipherText20);
         System.out.println("index of 5-st ciphertext : " + String.format("%,.4f", index20));
 
-        File doc1 = new File("C:\\ciphertext.txt");
+        File doc1 = new File("C:\\ciphertext_var1.txt");
         Scanner obj1 = new Scanner(doc1);
         StringBuilder text1 = new StringBuilder();
         while (obj1.hasNextLine()) {
             text1.append(obj1.nextLine());
         }
-        System.out.println(text1);
-        int r = determineKeyLengthWithD(text1.toString());
-        System.out.println(r);
-        String key = findKey(r, text1.toString());
-        System.out.println(key);
+        System.out.println("Cipher text is: " + text1);
+        int r = determineKeyLength(text1.toString());
+        System.out.println("Key length is "+ r);
+        String key1 = findKey(r, text1.toString());
+        System.out.println("Key1 is " + key1);
+        String key = findKeyWithM(r, text1.toString());
+        System.out.println("Key2 is " + key);
+
+        String pureText = decryptText(text1.toString(), key);
+        System.out.println("The decoded text is: " + pureText);
     }
 }
