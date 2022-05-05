@@ -61,6 +61,7 @@ public class VigenereCipher {
             for (int p = 0; (p + r) < text.length(); p = p + r) {
                 if (text.charAt(p) == text.charAt(p + r)) d++;
             }
+            System.out.println("r="+r + " d="+ d);
             temp = d;
             if (temp > max) {
                 max = temp;
@@ -189,7 +190,7 @@ public class VigenereCipher {
         String key3 = "мир";
         String key4 = "игра";
         String key5 = "жизнь";
-        String key20 = "двестипятьдесяттысяч";
+        String key12 = "пятоефевраля";
 
         String cipherText2 = encryptText(finalString, key2);
         System.out.println("key length is 2: " + cipherText2);
@@ -199,8 +200,8 @@ public class VigenereCipher {
         System.out.println("key length is 4: " + cipherText4);
         String cipherText5 = encryptText(finalString, key5);
         System.out.println("key length is 5: " + cipherText5);
-        String cipherText20 = encryptText(finalString, key20);
-        System.out.println("key length is 20: " + cipherText20);
+        String cipherText20 = encryptText(finalString, key12);
+        System.out.println("key length is 12: " + cipherText20);
 
         double index1 = matchingIndex(finalString);
         System.out.println("index of pure text : " + String.format("%,.4f", index1));
@@ -229,7 +230,9 @@ public class VigenereCipher {
         String key = findKeyWithM(r, text1.toString());
         System.out.println("Key2 is " + key);
 
-        String pureText = decryptText(text1.toString(), key);
-        System.out.println("The decoded text is: " + pureText);
+        String pureText = decryptText(text1.toString(), key1);
+        System.out.println("The decoded text with Key1 is: " + pureText);
+        String pureText1 = decryptText(text1.toString(), key);
+        System.out.println("The decoded text with Key2 is: " + pureText1);
     }
 }
