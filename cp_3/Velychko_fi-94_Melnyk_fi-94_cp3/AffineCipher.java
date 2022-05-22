@@ -112,6 +112,67 @@ public class AffineCipher {
         return (mapbi);
     }
 
+    public static ArrayList<Integer> findingKey(HashMap<String, Integer> mapbi1) {
+        StringBuilder arrayBi = new StringBuilder();
+        ArrayList<Integer> answers = new ArrayList<Integer>();
+        ArrayList<Integer> aAndb = new ArrayList<Integer>();
+        char[] arrayLang = {'с', 'н', 'о', 'т', 'о', 'н', 'а', 'е', 'н'};
+        int m = (int) Math.pow(31, 2);
+        int x;
+        int y;
+        int a1, a, b, yBi1, xBi1, yBi2, xBi2;
+        for (String str : mapbi1.keySet()) {
+            arrayBi.append(str);
+            System.out.println(str);
+        }
+        System.out.println(arrayBi);
+        xBi1=(arrayBi.charAt(0)-1072)*31+(arrayBi.charAt(1)-1072);
+        xBi2=(arrayBi.charAt(1)-1072)*31+(arrayBi.charAt(2)-1072);
+        yBi1=(arrayLang[0]-1072)*31+(arrayLang[1]-1072);
+        yBi2=(arrayLang[2]-1072)*31+(arrayLang[3]-1072);
+        x = xBi1-xBi2;
+        y = yBi1-yBi2;
+        answers = congruenceSolution(y, x, m);
+        a1 = answers.get(0);
+        a = EuclidsAlgorithm(a1, m);
+        int temp = yBi1 - a * xBi1;
+        answers = congruenceSolution(1, temp, m);
+        b = answers.get(0);
+
+        aAndb.add(a);
+        aAndb.add(b);
+        return aAndb;
+
+    }
+
+    public static String decryption(String text) {
+        LinkedHashMap<String, Integer> biMap = new LinkedHashMap<>();
+        ArrayList<Integer> keyParams = new ArrayList<Integer>();
+        StringBuilder pureText = new StringBuilder();
+        StringBuilder text1 = new StringBuilder();
+        text1.append(text);
+        int rev_a;
+        int y, x1, x2;
+        int i = 0;
+        int m = (int) Math.pow(31, 2);
+        biMap = find5MostPopularBigrams(text);
+        keyParams = findingKey(biMap);
+        rev_a = EuclidsAlgorithm(keyParams.get(0), m);
+        System.out.println(text1);
+        while (pureText.length() != text.length()) {
+            y=text1.charAt(i)*31+text1.charAt(i+1);
+            int temp;
+            System.out.println(text1.charAt(i)+" "+ text1.charAt(i+1));
+            temp = rev_a * (y - keyParams.get(1));
+            while (temp> m) temp = temp - m;
+            x1=temp/31;
+            x2=temp%31;
+            pureText.append((char) (x1+1072));
+            pureText.append((char) (x2+1072));
+            i++;
+        }
+        return pureText.toString();
+    }
 
     public static void main(String[] args) throws Exception {
         File doc = new File("C:\\01.txt");
@@ -120,8 +181,7 @@ public class AffineCipher {
         while (obj.hasNextLine()) {
             text.append(obj.nextLine());
         }
-        HashMap<String, Integer> mapbi = new HashMap<>();
-        mapbi = find5MostPopularBigrams(text.toString());
-        System.out.println(mapbi);
+        String pureText = decryption(text.toString());
+        System.out.println(pureText);
     }
 }
