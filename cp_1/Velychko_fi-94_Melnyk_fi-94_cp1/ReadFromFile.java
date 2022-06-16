@@ -4,7 +4,6 @@ import java.util.*;
 
 public class ReadFromFile {
 
-
     public static HashMap<Character, Double> sortByValue(HashMap<Character, Double> sortedMap) {
 
         List<Map.Entry<Character, Double>> list =
@@ -29,16 +28,15 @@ public class ReadFromFile {
     }
 
     public static void main(String[] args) throws Exception {
-        File doc = new File("C:\\Users\\Olena\\Desktop\\Velychko_fi-94_Melnyk_fi-94_cp1\\text.txt");
+        File doc = new File("C:\\text.txt");
         Scanner obj = new Scanner(doc);
 
-        double i = 0.0;
-        int num_of_chars = 0;
-        int num_of_spaces = 0;
-        int num_of_spaces1 = 0;
-        int num_of_spaces2 = 0;
+        int num_of_chars;
+        int num_of_chars1;
         int num_of_bi = 0;
+        int num_of_bi0 = 0;
         int num_of_bi1 = 0;
+        int num_of_bi2 = 0;
         double H1_1 = 0.0;
         double H1_2 = 0.0;
         double H2_1 = 0.0;
@@ -59,23 +57,24 @@ public class ReadFromFile {
             builder.append(' ');
         }
 
+        StringBuilder strWithoutSps = new StringBuilder();
         String finalString = builder.toString().trim().replaceAll("[ ]+", " ");
+        for(int k=0; k<finalString.length(); k++){
+            if(finalString.charAt(k)!=' ') strWithoutSps.append(finalString.charAt(k));
+        }
         num_of_chars = finalString.length();
+        num_of_chars1 = strWithoutSps.length();
         HashMap<Character, Double> sortedMap = new HashMap<>();
-
         for (char ch : finalString.toCharArray()) {
-            if (!sortedMap.containsKey(ch)) {
-                sortedMap.put(ch, 1.0);
-            } else {
-                i = sortedMap.get(ch);
-                i++;
-                sortedMap.put(ch, i);
-            }
-            if (ch == ' ') {
-                num_of_spaces++;
-            }
+            sortedMap.put(ch, sortedMap.getOrDefault(ch, 0.0) + 1.0);
         }
         Map<Character, Double> hm1 = sortByValue(sortedMap);
+
+        HashMap<Character, Double> sortedMap1 = new HashMap<>();
+        for (char ch : strWithoutSps.toString().toCharArray()) {
+            sortedMap1.put(ch, sortedMap.getOrDefault(ch, 0.0) + 1.0);
+        }
+        Map<Character, Double> hm2 = sortByValue(sortedMap1);
 
         System.out.println("Table with spaces");
         System.out.println("-------------------------");
@@ -86,31 +85,25 @@ public class ReadFromFile {
 
         System.out.println("Table without spaces");
         System.out.println("-------------------------");
-        for (Character ch : hm1.keySet()) {
-            if (Character.isDigit(ch) || Character.isAlphabetic(ch)) {
-                val2 = hm1.get(ch) / (num_of_chars - num_of_spaces);
-                System.out.println(ch + " - " + String.format("%,.4f", val2));
-            }
+        for (Character ch : hm2.keySet()) {
+            val2 = hm2.get(ch) /num_of_chars1;
+            System.out.println(ch + " - " + String.format("%,.4f", val2));
         }
 
         HashMap<String, Double> mapbi_intersections = new HashMap<>();
-
         for (int k = 0; k + 1 < finalString.length(); k++) {
             String bigram = finalString.substring(k, k + 2);
-            if (!mapbi_intersections.containsKey(bigram)) {
-                mapbi_intersections.put(bigram, 1.0);
-                num_of_bi++;
-            } else {
-                i = mapbi_intersections.get(bigram);
-                i++;
-                mapbi_intersections.put(bigram, i);
-                num_of_bi++;
-            }
-
-            if (bigram.charAt(0) == ' ' || bigram.charAt(1) == ' ') {
-                num_of_spaces1++;
-            }
+            mapbi_intersections.put(bigram, mapbi_intersections.getOrDefault(bigram, 0.0) + 1.0);
+            num_of_bi0++;
         }
+
+        HashMap<String, Double> mapbi_intersections1 = new HashMap<>();
+        for (int k = 0; k + 1 < strWithoutSps.length(); k++) {
+            String bigram = strWithoutSps.substring(k, k + 2);
+            mapbi_intersections1.put(bigram, mapbi_intersections1.getOrDefault(bigram, 0.0) + 1.0);
+            num_of_bi++;
+        }
+
         System.out.println("Table for bigrams with spaces and intersections");
         System.out.println("------------------------------------------------");
         double[][] tableAB = new double[33][33];
@@ -122,14 +115,14 @@ public class ReadFromFile {
                 } else {
                     j = str.charAt(0) - 'а';
                 }
-
                 if (str.charAt(1) == ' ') {
                     k = 32;
                 } else {
                     k = str.charAt(1) - 'а';
                 }
-                tableAB[j][k] = mapbi_intersections.get(str) / num_of_bi;
+                tableAB[j][k] = mapbi_intersections.get(str) / num_of_bi0;
         }
+
         System.out.println("    а       б       в       г       д       е       ж       з       и       й       к       л       м       н       о       п       р       с       т       у       ф       х       ц       ч       ш       щ       ъ       ы       ь       э       ю       я       ' '");
         System.out.println("========================================================================================================================================================================================================================================================================");
         for (int j = 0; j < 33; j++) {
@@ -152,7 +145,7 @@ public class ReadFromFile {
                 int k;
                 j = str.charAt(0) - 'а';
                 k = str.charAt(1) - 'а';
-                tableA_B[j][k] = mapbi_intersections.get(str) / (num_of_bi - num_of_spaces1);
+                tableA_B[j][k] = mapbi_intersections.get(str) / num_of_bi;
             }
         }
 
@@ -168,27 +161,20 @@ public class ReadFromFile {
             System.out.println();
         }
 
-
         HashMap<String, Double> mapbi = new HashMap<>();
-
-        for (int k = 0; k + 1 < finalString.length(); k++) {
+        for (int k = 0; k + 1 < finalString.length(); k=k+2) {
             String bigram = finalString.substring(k, k + 2);
-            k++;
-
-            if (!mapbi.containsKey(bigram)) {
-                mapbi.put(bigram, 1.0);
-                num_of_bi1++;
-            } else {
-                i = mapbi.get(bigram);
-                i++;
-                mapbi.put(bigram, i);
-                num_of_bi1++;
-            }
-
-            if (bigram.charAt(0) == ' ' || bigram.charAt(1) == ' ') {
-                num_of_spaces2++;
-            }
+            mapbi.put(bigram, mapbi.getOrDefault(bigram, 0.0) + 1.0);
+            num_of_bi2++;
         }
+
+        HashMap<String, Double> mapbi1 = new HashMap<>();
+        for (int k = 0; k + 1 < strWithoutSps.length(); k=k+2) {
+            String bigram = strWithoutSps.substring(k, k + 2);
+            mapbi1.put(bigram, mapbi1.getOrDefault(bigram, 0.0) + 1.0);
+            num_of_bi1++;
+        }
+
         System.out.println("Table for bigrams with spaces");
         System.out.println("------------------------------");
         double[][] tableBС = new double[33][33];
@@ -200,7 +186,6 @@ public class ReadFromFile {
             } else {
                 l = str.charAt(0) - 'а';
             }
-
             if (str.charAt(1) == ' ') {
                 m = 32;
             } else {
@@ -208,6 +193,7 @@ public class ReadFromFile {
             }
             tableBС[l][m] = mapbi.get(str) / num_of_bi1;
         }
+
         System.out.println("    а       б       в       г       д       е       ж       з       и       й       к       л       м       н       о       п       р       с       т       у       ф       х       ц       ч       ш       щ       ъ       ы       ь       э       ю       я       ' '");
         System.out.println("=========================================================================================================================================================================================================================================================================");
         for (int l = 0; l < 33; l++) {
@@ -231,9 +217,10 @@ public class ReadFromFile {
                 l = str.charAt(0) - 'а';
                 m = str.charAt(1) - 'а';
 
-                tableB_С[l][m] = mapbi.get(str) / (num_of_bi1 - num_of_spaces2);
+                tableB_С[l][m] = mapbi.get(str) / num_of_bi1;
             }
         }
+
         System.out.println("    а       б       в       г       д       е       ж       з       и       й       к       л       м       н       о       п       р       с       т       у       ф       х       ц       ч       ш       щ       ъ       ы       ь       э       ю       я");
         System.out.println("================================================================================================================================================================================================================================================================");
         for (int l = 0; l < 32; l++) {
@@ -251,38 +238,41 @@ public class ReadFromFile {
             Log = Math.log(val1) / Math.log(2);
             h1_1 = val1 * Log;
             H1_1 = -h1_1 + H1_1;
-            if (ch != ' ') {
-                val2 = sortedMap.get(ch) / (num_of_chars - num_of_spaces);
-                Log = Math.log(val2) / Math.log(2);
-                h1_2 = val2 * Log;
-                H1_2 = -h1_2 + H1_2;
-            }
+        }
+
+        for (Character ch : sortedMap1.keySet()) {
+            val2 = sortedMap.get(ch) / num_of_chars1;
+            Log = Math.log(val2) / Math.log(2);
+            h1_2 = val2 * Log;
+            H1_2 = -h1_2 + H1_2;
         }
 
         for (String str : mapbi_intersections.keySet()) {
-            val1 = mapbi_intersections.get(str) / num_of_bi;
+            val1 = mapbi_intersections.get(str) / num_of_bi0;
             Log = Math.log(val1) / Math.log(2);
             h1_1 = val1 * Log;
             H2_1 = (-h1_1 + H2_1);
-            if (str.charAt(0) != ' ' || str.charAt(1) != ' ') {
-                val2 = mapbi_intersections.get(str) / (num_of_bi - num_of_spaces1);
-                Log = Math.log(val2) / Math.log(2);
-                h1_2 = val2 * Log;
-                H2_2 = (-h1_2 + H2_2);
-            }
+        }
+
+        for (String str : mapbi_intersections1.keySet()) {
+            val2 = mapbi_intersections1.get(str) / num_of_bi;
+            Log = Math.log(val2) / Math.log(2);
+            h1_2 = val2 * Log;
+            H2_2 = (-h1_2 + H2_2);
         }
 
         for (String str : mapbi.keySet()) {
-            val1 = mapbi.get(str) / num_of_bi1;
+            val1 = mapbi.get(str) / num_of_bi2;
             Log = Math.log(val1) / Math.log(2);
             h1_1 = val1 * Log;
             H2_3 = (-h1_1 + H2_3);
-            if (str.charAt(0) != ' ' || str.charAt(1) != ' ') {
-                val2 = mapbi.get(str) / (num_of_bi1 - num_of_spaces2);
-                Log = Math.log(val2) / Math.log(2);
-                h1_2 = val2 * Log;
-                H2_4 = (-h1_2 + H2_4);
-            }
+        }
+
+        for (String str : mapbi1.keySet()) {
+            val2 = mapbi1.get(str) / num_of_bi1;
+            Log = Math.log(val2) / Math.log(2);
+            h1_2 = val2 * Log;
+            H2_4 = (-h1_2 + H2_4);
         }
 
         System.out.println("H1 with spaces  = " + String.format("%,.4f", H1_1));
@@ -293,6 +283,4 @@ public class ReadFromFile {
         System.out.println("H2 without spaces  = " + String.format("%,.4f", H2_4 / 2));
 
     }
-
-
 }
