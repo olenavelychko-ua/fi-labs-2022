@@ -34,13 +34,7 @@ public class VigenereCipher {
         int n;
         double index = 0;
         for (char ch : text.toCharArray()) {
-            if (!map.containsKey(ch)) {
-                map.put(ch, 1);
-            } else {
-                i = map.get(ch);
-                i++;
-                map.put(ch, i);
-            }
+            map.put(ch, map.getOrDefault(ch, 0) + 1);
         }
         for (char ch : map.keySet()) {
             n = map.get(ch);
@@ -55,19 +49,25 @@ public class VigenereCipher {
         int max = 0;
         int maxr = 0;
         int r = 8;
-        int d;
+        int d = 0;
+        int shift = 0;
+        int p;
         while (r < 20) {
-            d = 0;
-            for (int p = 0; (p + r) < text.length(); p = p + r) {
-                if (text.charAt(p) == text.charAt(p + r)) d++;
+            while (shift < r) {
+                for (p = shift; (p + r) < text.length(); p = p + r) {
+                    if (text.charAt(p) == text.charAt(p + r)) d++;
+                }
+                shift++;
             }
-            System.out.println("r="+r + " d="+ d);
+            System.out.println("r=" + r + " d=" + d);
             temp = d;
             if (temp > max) {
                 max = temp;
                 maxr = r;
             }
             r++;
+            shift = 0;
+            d = 0;
         }
         return maxr;
     }
@@ -106,7 +106,7 @@ public class VigenereCipher {
         return key.toString();
     }
 
-    private static String findKeyWithM(int r, String text)  {
+    private static String findKeyWithM(int r, String text) {
         final double[] Abc = new double[]{0.062, 0.014, 0.038, 0.013, 0.025, 0.072, 0.007, 0.016, 0.062, 0.010, 0.028, 0.035, 0.026, 0.053, 0.090, 0.023, 0.040, 0.045, 0.053, 0.021, 0.002, 0.009, 0.004, 0.012, 0.006, 0.003, 0.014, 0.016, 0.014, 0.003, 0.006, 0.018};
         final String alf = "абвгдежзийклмнопрстуфхцчшщъыьэюя";
         StringBuilder key = new StringBuilder();
@@ -135,6 +135,10 @@ public class VigenereCipher {
             }
             Character maxch = 'a';
             double count = -1;
+            for (Character ch : mapKeySymbols.keySet()) {
+                System.out.println(ch + " " + String.format("%,.1f", mapKeySymbols.get(ch)));
+            }
+            System.out.println("__________");
             for (Character ch : mapKeySymbols.keySet()) {
                 if (mapKeySymbols.get(ch) > count) {
                     maxch = ch;
@@ -184,7 +188,7 @@ public class VigenereCipher {
             builder.append(' ');
         }
         String finalString = builder.toString().trim().replaceAll("[ ]+", " ");
-        System.out.println("Pure text is: "+finalString);
+        System.out.println("Pure text is: " + finalString);
 
         String key2 = "ум";
         String key3 = "мир";
@@ -224,7 +228,7 @@ public class VigenereCipher {
         }
         System.out.println("Cipher text is: " + text1);
         int r = determineKeyLength(text1.toString());
-        System.out.println("Key length is "+ r);
+        System.out.println("Key length is " + r);
         String key1 = findKey(r, text1.toString());
         System.out.println("Key1 is " + key1);
         String key = findKeyWithM(r, text1.toString());
